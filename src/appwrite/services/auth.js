@@ -49,7 +49,7 @@ export class AuthService {
         return currentUser;
       }
     } catch (error) {
-      throw new error("getting error ");
+      console.log("error while getting user", error);
     }
   }
   async userLogout() {
