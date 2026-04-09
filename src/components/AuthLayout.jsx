@@ -15,7 +15,7 @@ if(authentication &&  authStatus !==authentication){
 else if(!authentication && authStatus!==authentication){
     navigate("/")
 }
-},[])
+},[authentication,authStatus,navigate])
 
     return(
 
