@@ -44,12 +44,16 @@ export class AuthService {
   }
   async getCurrentUser() {
     try {
-      const currentUser = await this.account.get();
-      if (currentUser) {
-        return currentUser;
-      }
+      // Logic: Attempt to fetch the session
+      return await this.account.get();
     } catch (error) {
-      console.log("error while getting user", error);
+      // Logic: If it's a 401, it just means no one is logged in.
+      // We don't necessarily need to treat this as a "scary" error.
+      if (error.code === 401) {
+        return null; // Return null so your UI knows: "User is a Guest"
+      }
+      console.log("Actual Appwrite error:", error);
+      return null;
     }
   }
   async userLogout() {

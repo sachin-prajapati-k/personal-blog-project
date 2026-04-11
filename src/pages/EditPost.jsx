@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams,  } from "react-router-dom";
-import { dataService } from "../appwrite/services/dataService";
+import { useNavigate, useParams } from "react-router-dom";
+import dataservice from "../appwrite/services/dataservice";
 import Container from "../components/container/Container";
 import PostForm from "../components/PostForm/PostForm";
 
@@ -10,7 +10,7 @@ export default function EditPost() {
   const navigate = useNavigate();
   useEffect(() => {
     if (slug) {
-      dataService.getPost(slug).then((post) => {
+      dataservice.getPost(slug).then((post) => {
         if (post) {
           setPost(post);
         }

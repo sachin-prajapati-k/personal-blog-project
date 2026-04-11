@@ -1,12 +1,12 @@
 import PostCard from "../components/PostCard";
 import Container from "../components/container/Container";
-import { dataService } from "../appwrite/services/dataService";
+import dataservice from "../appwrite/services/dataservice";
 import { useState, useEffect } from "react";
 
 export default function AllPost() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {}, []);
-  dataService.getPosts().then((posts) => setPosts(posts.documents));
+  dataservice.getPosts().then((posts) => setPosts(posts.documents));
   return (
     <div className="w-full py-8">
       <Container>

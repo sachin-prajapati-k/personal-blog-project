@@ -7,7 +7,7 @@ import { store } from "./store/store.js";
 import { createBrowserRouter } from "react-router-dom";
 import Home from "../src/pages/Home.jsx";
 import Login from "../src/pages/Login.jsx";
-import Signup from "../src/pages/Signup.jsx";
+import SignUp from "../src/pages/Signup.jsx";
 import AllPosts from "../src/pages/AllPost.jsx";
 import AddPost from "../src/pages/AddPost.jsx";
 import EditPost from "../src/pages/EditPost.jsx";
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
         path: "/signup",
         element: (
           <AuthLayout authentication={false}>
-            <Signup />
+            <SignUp />
           </AuthLayout>
         ),
       },

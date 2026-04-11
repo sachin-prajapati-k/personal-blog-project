@@ -1,11 +1,11 @@
-import  { dataService } from "../appwrite/services/dataService";
+import  dataservice  from "../appwrite/services/dataservice";
 import { useEffect, useState } from "react";
 import Container from "../components/container/Container";
 import PostCard from "../components/PostCard";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
-    dataService.getPosts().then((posts) => {
+    dataservice.getPosts().then((posts) => {
       if (posts) {
         setPosts(posts.document);
       }

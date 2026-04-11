@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import dataservice from "../appwrite/services/dataService";
+import dataservice from "../appwrite/services/dataservice";
 import Button from "../components/Button";
 import Container from "../components/container/Container";
 import parse from "html-react-parser";
