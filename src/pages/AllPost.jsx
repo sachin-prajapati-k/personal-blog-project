@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 export default function AllPost() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {}, []);
-  dataService.getPosts([]).then((posts) => setPosts(posts.documents));
+  dataService.getPosts().then((posts) => setPosts(posts.documents));
   return (
     <div className="w-full py-8">
       <Container>

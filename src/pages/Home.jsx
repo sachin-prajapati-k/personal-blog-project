@@ -5,7 +5,7 @@ import PostCard from "../components/PostCard";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
-    dataService.getPosts([]).then((posts) => {
+    dataService.getPosts().then((posts) => {
       if (posts) {
         setPosts(posts.document);
       }
