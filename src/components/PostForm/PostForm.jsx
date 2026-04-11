@@ -3,35 +3,43 @@ import RTE from "../RTE";
 import Button from "../Button";
 import Input from "../Input";
 import Select from "../Select";
-import dataService from "../../appwrite/services/dataService";
+import dataservice from "../../appwrite/services/dataService";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 export default function PostForm({ post }) {
-  const { register, handleSubmit, watch, setValue, control, getValues } =
-    useForm({
-      defaultValues: {
-        title: post?.title || "",
-        slug: post?.$id || "",
-        content: post?.content || "",
-        status: post?.status || "active",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    control,
+    getValues,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      title: post?.title || "",
+      slug: post?.$id || "",
+      content: post?.content || "",
+      status: post?.status || "active",
+    },
+  });
 
   const navigate = useNavigate();
   const userData = useSelector((state) => state.auth.userData);
 
   const submit = async (data) => {
+    try {
     if (post) {
       const file = data.image[0]
-        ? await dataService.uploadFile(data.image[0])
+        ? await dataservice.uploadFile(data.image[0])
         : null;
 
       if (file) {
-        dataService.deleteFile(post.featuredImage);
+        dataservice.deleteFile(post.featuredImage);
       }
 
-      const dbPost = await dataService.updatePost(post.$id, {
+      const dbPost = await dataservice.updatePost(post.$id, {
         ...data,
         featuredImage: file ? file.$id : undefined,
       });
@@ -40,21 +48,33 @@ export default function PostForm({ post }) {
         navigate(`/post/${dbPost.$id}`);
       }
     } else {
-      const file = await dataService.uploadFile(data.image[0]);
+      if (!userData?.$id) {
+        alert("You must be logged in to create a post.");
+        return;
+      }
+      const file = await dataservice.uploadFile(data.image?.[0]);
+      const dbPost = await dataservice.createPost({
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        status: data.status,
+        featuredImage: file.$id,
+        userId: userData.$id,
+      });
 
-      if (file) {
-        const fileId = file.$id;
-        data.featuredImage = fileId;
-        const dbPost = await dataService.createPost({
-          ...data,
-          userId: userData.$id,
-        });
-
-        if (dbPost) {
-          navigate(`/post/${dbPost.$id}`);
-        }
+      if (dbPost) {
+        navigate(`/post/${dbPost.$id}`);
       }
     }
+    } catch (err) {
+      alert(err?.message || "Something went wrong while saving the post.");
+    }
+  };
+
+  const onInvalid = (formErrors) => {
+    const first = Object.values(formErrors)[0];
+    const msg = first?.message || first?.type || "Please fill in all required fields.";
+    alert(typeof msg === "string" ? msg : "Please fill in all required fields.");
   };
 
   const slugTransform = useCallback((value) => {
@@ -79,7 +99,11 @@ export default function PostForm({ post }) {
   }, [watch, slugTransform, setValue]);
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
+    <form
+      noValidate
+      onSubmit={handleSubmit(submit, onInvalid)}
+      className="flex flex-wrap"
+    >
       <div className="w-2/3 px-2">
         <Input
           label="Title :"
@@ -116,7 +140,7 @@ export default function PostForm({ post }) {
         {post && (
           <div className="w-full mb-4">
             <img
-              src={dataService.getFilePreview(post.featuredImage)}
+              src={dataservice.getFilePreview(post.featuredImage)}
               alt={post.title}
               className="rounded-lg"
             />
@@ -128,9 +152,18 @@ export default function PostForm({ post }) {
           className="mb-4"
           {...register("status", { required: true })}
         />
+        {Object.keys(errors).length > 0 && (
+          <p className="text-red-600 text-sm mb-2" role="alert">
+            {errors.title && "Title is required. "}
+            {errors.slug && "Slug is required. "}
+            {errors.content && "Content is required. "}
+            {errors.image && "Featured image is required. "}
+            {errors.status && "Status is required."}
+          </p>
+        )}
         <Button
           type="submit"
-          bgColor={post ? "bg-green-500" : undefined}
+          bgcolor={post ? "bg-green-500" : undefined}
           className="w-full"
         >
           {post ? "Update" : "Submit"}

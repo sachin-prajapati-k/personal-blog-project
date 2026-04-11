@@ -28,7 +28,7 @@ export class DataService {
         },
       );
     } catch (error) {
-      throw new error("error while createing post");
+      throw new Error(error?.message || "error while creating post");
     }
   }
 
@@ -47,7 +47,7 @@ export class DataService {
         },
       );
     } catch (error) {
-      throw new error("error while updating post");
+      throw new Error(error?.message || "error while updating post");
     }
   }
 
@@ -101,15 +101,23 @@ export class DataService {
   }
 
   async uploadFile(file) {
-    try {
-      return await this.bucket.createFile(
-        config.appWriteBucketId,
-        ID.unique(),
-        file,
+    if (!file || !(file instanceof File)) {
+      throw new Error("No image file selected.");
+    }
+    const bucketId = config.appWriteBucketId;
+    if (!bucketId || bucketId === "undefined") {
+      throw new Error(
+        "Set VITE_APPWRITE_BUCKET_ID in your .env file to your Storage bucket ID (Appwrite → Storage), then restart the dev server.",
       );
+    }
+    try {
+      return await this.bucket.createFile(bucketId, ID.unique(), file);
     } catch (error) {
-      console.log("getting error while uploading file", error);
-      return false;
+      console.error("uploadFile:", error);
+      const msg =
+        error?.message ||
+        (error?.code != null ? `Appwrite ${error.code}` : "Upload failed");
+      throw new Error(msg);
     }
   }
 

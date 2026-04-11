@@ -1,6 +1,13 @@
 import config from "../../../config/config.js";
 import { Client, Account, ID } from "appwrite";
 
+function formatAppwriteError(error, fallback) {
+  if (error?.code === 404 && error?.type === "project_not_found") {
+    return "Wrong Appwrite project ID. In .env set VITE_APPWRITE_PROJECT_ID to the ID from Appwrite Console → your project → Settings (Overview). It is not the same as Database ID. Save, then restart the dev server (npm run dev).";
+  }
+  return error?.message || fallback;
+}
+
 export class AuthService {
   client = new Client();
   account;
@@ -34,7 +41,7 @@ export class AuthService {
         return userLogin;
       }
     } catch (error) {
-      throw new Error(error.message || "error while login");
+      throw new Error(formatAppwriteError(error, "error while login"));
     }
   }
   async getCurrentUser() {
@@ -60,7 +67,7 @@ export class AuthService {
       const userLogout = await this.account.deleteSessions();
       return userLogout;
     } catch (error) {
-      throw new Error(error.message || "error while logout");
+      throw new Error(formatAppwriteError(error, "error while logout"));
     }
   }
 }

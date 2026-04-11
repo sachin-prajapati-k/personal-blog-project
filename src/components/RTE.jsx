@@ -8,9 +8,11 @@ export default function RTE({ name, control, label, defaultValue = "" }) {
       <Controller
         name={name || "content"}
         control={control}
-        render={({ field: { onChange } }) => (
+        defaultValue={defaultValue}
+        render={({ field }) => (
           <Editor
-            initialValue={defaultValue}
+            apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+            value={field.value ?? ""}
             init={{
               initialValue: defaultValue,
               height: 500,
@@ -42,7 +44,8 @@ export default function RTE({ name, control, label, defaultValue = "" }) {
               content_style:
                 "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
             }}
-            onEditorChange={onChange}
+            onEditorChange={(content) => field.onChange(content)}
+            onBlur={field.onBlur}
           />
         )}
       />
