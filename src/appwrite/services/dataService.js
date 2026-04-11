@@ -38,7 +38,7 @@ export class DataService {
     this.bucket = new Storage(this.client);
   }
 
-  async createPost({ title, slug, featuredImage, content, status, userId }) {
+  async createPost({ title, featuredImage, content, status, userId }) {
     try {
       // Use a unique document $id — using the URL slug as $id makes every duplicate slug overwrite the same document.
       return await this.databases.createDocument({
@@ -169,15 +169,27 @@ export class DataService {
     }
   }
 
-  /** Sync URL builder — must not be async or `<img src={...}>` receives a Promise. */
+  /**
+   * Public URL for `<img src>` (sync string, not a Promise).
+   * Uses Storage `getFileView` (GET …/files/{id}/view) for inline display — more reliable than
+   * `getFilePreview` (image transform pipeline) for plain photos.
+   * Requires read access without a session for anonymous visitors (e.g. Permission.read(Role.any()) on the file),
+   * since `<img>` cannot send Authorization headers to Appwrite.
+   */
   getFilePreview(fileId) {
-    if (fileId == null || fileId === "") {
+    const id =
+      fileId == null || fileId === "" ? "" : String(fileId).trim();
+    if (!id) {
+      return "";
+    }
+    const bucketId = config.appWriteBucketId;
+    if (!bucketId) {
       return "";
     }
     try {
-      return this.bucket.getFilePreview(config.appWriteBucketId, fileId);
+      return this.bucket.getFileView({ bucketId, fileId: id });
     } catch (error) {
-      console.log("error while getting file preview", error);
+      console.warn("getFilePreview (getFileView):", error);
       return "";
     }
   }

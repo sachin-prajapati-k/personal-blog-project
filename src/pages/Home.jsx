@@ -1,4 +1,4 @@
-import  dataservice  from "../appwrite/services/dataservice";
+import dataservice from "../appwrite/services/dataService";
 import { useEffect, useState } from "react";
 import Container from "../components/container/Container";
 import PostCard from "../components/PostCard";

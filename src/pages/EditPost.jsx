@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import dataservice from "../appwrite/services/dataservice";
+import dataservice from "../appwrite/services/dataService";
 import Container from "../components/container/Container";
 import PostForm from "../components/PostForm/PostForm";
 

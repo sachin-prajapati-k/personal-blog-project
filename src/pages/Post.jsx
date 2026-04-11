@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import dataservice from "../appwrite/services/dataservice";
+import dataservice from "../appwrite/services/dataService";
 import Button from "../components/Button";
 import Container from "../components/container/Container";
 import parse from "html-react-parser";
@@ -36,15 +36,32 @@ export default function Post() {
     });
   };
 
-  return post ? (
+  if (!post) {
+    return null;
+  }
+
+  const featuredSrc = dataservice.getFilePreview(
+    post.featuredimage ?? post.featuredImage,
+  );
+
+  return (
     <div className="py-8">
       <Container>
         <div className="w-full flex justify-center mb-4 relative border rounded-xl p-2">
-          <img
-            src={dataservice.getFilePreview(post.featuredimage ?? post.featuredImage)}
-            alt={post.title}
-            className="rounded-xl"
-          />
+          {featuredSrc ? (
+            <img
+              src={featuredSrc}
+              alt={post.title}
+              className="rounded-xl max-h-[480px] w-auto object-contain"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <div
+              className="rounded-xl w-full min-h-[200px] bg-gray-100"
+              aria-hidden
+            />
+          )}
 
           {isAuthor && (
             <div className="absolute right-6 top-6">
@@ -65,5 +82,5 @@ export default function Post() {
         <div className="browser-css">{parse(post.content)}</div>
       </Container>
     </div>
-  ) : null;
+  );
 }

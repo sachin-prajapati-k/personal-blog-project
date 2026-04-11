@@ -109,6 +109,10 @@ export default function PostForm({ post }) {
     return () => subscription.unsubscribe();
   }, [watch, slugTransform, setValue]);
 
+  const editPreviewSrc = post
+    ? dataservice.getFilePreview(post.featuredimage ?? post.featuredImage)
+    : "";
+
   return (
     <form
       noValidate
@@ -148,15 +152,17 @@ export default function PostForm({ post }) {
           accept="image/png, image/jpg, image/jpeg, image/gif"
           {...register("image", { required: !post })}
         />
-        {post && (
+        {post && editPreviewSrc ? (
           <div className="w-full mb-4">
             <img
-              src={dataservice.getFilePreview(post.featuredimage ?? post.featuredImage)}
+              src={editPreviewSrc}
               alt={post.title}
-              className="rounded-lg"
+              className="rounded-lg max-w-full object-contain"
+              loading="lazy"
+              decoding="async"
             />
           </div>
-        )}
+        ) : null}
         <Select
           options={["active", "inactive"]}
           label="Status"
