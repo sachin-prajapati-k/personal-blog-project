@@ -12,19 +12,14 @@ export class AuthService {
   }
   async createAccount({ email, password, name }) {
     try {
-      const userAccount = await this.account.create({
-        ID,
+      return await this.account.create({
+        userId: ID.unique(),
         email,
         password,
         name,
       });
-      if (userAccount) {
-        return userAccount;
-      } else {
-        return userAccount;
-      }
     } catch (e) {
-      throw new Error("error while creating new user", e);
+      throw new Error(e.message || "error while creating new user");
     }
   }
   async loginAccount({ email, password }) {
@@ -39,29 +34,33 @@ export class AuthService {
         return userLogin;
       }
     } catch (error) {
-      throw new error("error while login");
+      throw new Error(error.message || "error while login");
     }
   }
   async getCurrentUser() {
-    try {
-      // Logic: Attempt to fetch the session
-      return await this.account.get();
-    } catch (error) {
-      // Logic: If it's a 401, it just means no one is logged in.
-      // We don't necessarily need to treat this as a "scary" error.
-      if (error.code === 401) {
-        return null; // Return null so your UI knows: "User is a Guest"
-      }
-      console.log("Actual Appwrite error:", error);
-      return null;
+    if (this._getUserInflight) {
+      return this._getUserInflight;
     }
+    this._getUserInflight = this.account
+      .get()
+      .catch((error) => {
+        if (error.code === 401) {
+          return null;
+        }
+        console.log("Actual Appwrite error:", error);
+        return null;
+      })
+      .finally(() => {
+        this._getUserInflight = null;
+      });
+    return this._getUserInflight;
   }
   async userLogout() {
     try {
       const userLogout = await this.account.deleteSessions();
       return userLogout;
     } catch (error) {
-      throw new error("error while logout");
+      throw new Error(error.message || "error while logout");
     }
   }
 }

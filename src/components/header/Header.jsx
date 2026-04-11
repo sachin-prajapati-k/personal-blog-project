@@ -25,13 +25,13 @@ export default function Header() {
     },
     {
       name: "All Posts",
-      slug: "/all-post",
-      active: !authStatus,
+      slug: "/all-posts",
+      active: authStatus,
     },
     {
       name: "Add Post",
       slug: "/add-post",
-      active: !authStatus,
+      active: authStatus,
     },
   ];
 
@@ -46,8 +46,8 @@ export default function Header() {
               </Link>
             </div>
             <ul className="flex ml-auto">
-              {navItems.map((item) =>
-                item.active ? (
+              {navItems.map((item) => {
+                return item.active ? (
                   <li key={item.name}>
                     <button
                       onClick={() => navigate(item.slug)}
@@ -57,8 +57,8 @@ export default function Header() {
                       {item.name}
                     </button>
                   </li>
-                ) : null,
-              )}
+                ) : null;
+              })}
               {authStatus && (
                 <li>
                   <LogoutButton />

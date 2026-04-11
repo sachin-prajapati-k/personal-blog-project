@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Home from "../src/pages/Home.jsx";
 import Login from "../src/pages/Login.jsx";
 import SignUp from "../src/pages/Signup.jsx";
@@ -20,8 +20,12 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "/",
+        index: true,
         element: <Home />,
+      },
+      {
+        path: "Home",
+        element: <Navigate to="/" replace />,
       },
       {
         path: "/login",

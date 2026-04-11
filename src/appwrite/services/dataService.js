@@ -79,16 +79,25 @@ export class DataService {
   }
 
   async getPosts() {
-    try {
-      return await this.databases.listDocuments(
+    if (this._getPostsInflight) {
+      return this._getPostsInflight;
+    }
+    this._getPostsInflight = this.databases
+      .listDocuments(
         config.appWriteDatabaseId,
         config.appWriteCollectionId,
         [Query.equal("status", "active")],
-      );
-    } catch (error) {
-      console.log("error while getting posts", error);
-      return false;
-    }
+      )
+      .catch((error) => {
+        if (error.code !== 401) {
+          console.log("error while getting posts", error);
+        }
+        return false;
+      })
+      .finally(() => {
+        this._getPostsInflight = null;
+      });
+    return this._getPostsInflight;
   }
 
   async uploadFile(file) {

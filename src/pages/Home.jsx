@@ -7,7 +7,7 @@ export default function Home() {
   useEffect(() => {
     dataservice.getPosts().then((posts) => {
       if (posts) {
-        setPosts(posts.document);
+        setPosts(posts.documents);
       }
     });
   }, []);
