@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
 import dataService from "../appwrite/services/dataService";
 
-export default function PostCard({ $id, featuredImage, title }) {
+export default function PostCard({ $id, featuredimage, featuredImage, title }) {
+  const imageId = featuredimage ?? featuredImage;
   return (
     <>
       <Link to={`/post/${$id}`}>
         <div className="w-full bg-gray-100 rounded-xl p-4 ">
           <div className="w-full justify-center mb-4">
             <img
-              src={dataService.getFilePreview(featuredImage)}
+              key={imageId}
+              src={dataService.getFilePreview(imageId)}
               alt={title}
               className="rounded-xl "
             />

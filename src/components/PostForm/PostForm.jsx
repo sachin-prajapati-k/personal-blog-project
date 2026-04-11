@@ -31,17 +31,25 @@ export default function PostForm({ post }) {
   const submit = async (data) => {
     try {
     if (post) {
+      if (!userData?.$id) {
+        alert("You must be logged in to edit a post.");
+        return;
+      }
       const file = data.image[0]
-        ? await dataservice.uploadFile(data.image[0])
+        ? await dataservice.uploadFile(data.image[0], userData.$id)
         : null;
 
       if (file) {
-        dataservice.deleteFile(post.featuredImage);
+        dataservice.deleteFile(post.featuredimage ?? post.featuredImage);
       }
 
       const dbPost = await dataservice.updatePost(post.$id, {
-        ...data,
-        featuredImage: file ? file.$id : undefined,
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        status: data.status,
+        userId: userData.$id,
+        featuredImage: file ? file.$id : post.featuredimage ?? post.featuredImage,
       });
 
       if (dbPost) {
@@ -52,7 +60,10 @@ export default function PostForm({ post }) {
         alert("You must be logged in to create a post.");
         return;
       }
-      const file = await dataservice.uploadFile(data.image?.[0]);
+      const file = await dataservice.uploadFile(
+        data.image?.[0],
+        userData.$id,
+      );
       const dbPost = await dataservice.createPost({
         title: data.title,
         slug: data.slug,
@@ -140,7 +151,7 @@ export default function PostForm({ post }) {
         {post && (
           <div className="w-full mb-4">
             <img
-              src={dataservice.getFilePreview(post.featuredImage)}
+              src={dataservice.getFilePreview(post.featuredimage ?? post.featuredImage)}
               alt={post.title}
               className="rounded-lg"
             />

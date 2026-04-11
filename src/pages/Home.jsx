@@ -5,10 +5,8 @@ import PostCard from "../components/PostCard";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
-    dataservice.getPosts().then((posts) => {
-      if (posts) {
-        setPosts(posts.documents);
-      }
+    dataservice.getPosts().then((res) => {
+      setPosts(Array.isArray(res?.documents) ? res.documents : []);
     });
   }, []);
   if (posts.length === 0) {

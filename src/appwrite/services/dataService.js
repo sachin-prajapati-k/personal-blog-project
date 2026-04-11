@@ -1,5 +1,30 @@
 import config from "../../../config/config";
-import { Client, ID, Databases, Storage, Query } from "appwrite";
+import {
+  Client,
+  ID,
+  Databases,
+  Storage,
+  Query,
+  Permission,
+  Role,
+} from "appwrite";
+
+/** Required when collection/bucket has document or file security enabled. */
+function filePermissions(userId) {
+  return [
+    Permission.read(Role.any()),
+    Permission.update(Role.user(userId)),
+    Permission.delete(Role.user(userId)),
+  ];
+}
+
+function documentPermissions(userId) {
+  return [
+    Permission.read(Role.any()),
+    Permission.update(Role.user(userId)),
+    Permission.delete(Role.user(userId)),
+  ];
+}
 
 export class DataService {
   client = new Client();
@@ -15,18 +40,20 @@ export class DataService {
 
   async createPost({ title, slug, featuredImage, content, status, userId }) {
     try {
-      return await this.databases.createDocument(
-        config.appWriteDatabaseId,
-        config.appWriteCollectionId,
-        slug,
-        {
+      // Use a unique document $id — using the URL slug as $id makes every duplicate slug overwrite the same document.
+      return await this.databases.createDocument({
+        databaseId: config.appWriteDatabaseId,
+        collectionId: config.appWriteCollectionId,
+        documentId: ID.unique(),
+        data: {
           title,
           content,
-          featuredImage,
+          featuredimage: featuredImage,
           status,
-          userId,
+          userid: userId,
         },
-      );
+        permissions: documentPermissions(userId),
+      });
     } catch (error) {
       throw new Error(error?.message || "error while creating post");
     }
@@ -41,8 +68,8 @@ export class DataService {
         {
           title,
           content,
-          featuredImage,
-          userId,
+          featuredimage: featuredImage,
+          userid: userId,
           status,
         },
       );
@@ -86,7 +113,11 @@ export class DataService {
       .listDocuments(
         config.appWriteDatabaseId,
         config.appWriteCollectionId,
-        [Query.equal("status", "active")],
+        [
+          Query.equal("status", "active"),
+          Query.orderDesc("$createdAt"),
+          Query.limit(250),
+        ],
       )
       .catch((error) => {
         if (error.code !== 401) {
@@ -100,9 +131,12 @@ export class DataService {
     return this._getPostsInflight;
   }
 
-  async uploadFile(file) {
+  async uploadFile(file, userId) {
     if (!file || !(file instanceof File)) {
       throw new Error("No image file selected.");
+    }
+    if (!userId) {
+      throw new Error("Missing user id for upload.");
     }
     const bucketId = config.appWriteBucketId;
     if (!bucketId || bucketId === "undefined") {
@@ -111,7 +145,12 @@ export class DataService {
       );
     }
     try {
-      return await this.bucket.createFile(bucketId, ID.unique(), file);
+      return await this.bucket.createFile({
+        bucketId,
+        fileId: ID.unique(),
+        file,
+        permissions: filePermissions(userId),
+      });
     } catch (error) {
       console.error("uploadFile:", error);
       const msg =
@@ -130,12 +169,16 @@ export class DataService {
     }
   }
 
-  async getFilePreview(fileId) {
+  /** Sync URL builder — must not be async or `<img src={...}>` receives a Promise. */
+  getFilePreview(fileId) {
+    if (fileId == null || fileId === "") {
+      return "";
+    }
     try {
-      return await this.bucket.getFilePreview(config.appWriteBucketId, fileId);
+      return this.bucket.getFilePreview(config.appWriteBucketId, fileId);
     } catch (error) {
       console.log("error while getting file preview", error);
-      return false;
+      return "";
     }
   }
 }
